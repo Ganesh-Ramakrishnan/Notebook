@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -254,7 +254,7 @@
   /* ---- apply saved prefs ---- */
   function hexSoft(hex){ const h=hex.replace('#',''); return 'rgba('+parseInt(h.substr(0,2),16)+','+parseInt(h.substr(2,2),16)+','+parseInt(h.substr(4,2),16)+',.15)'; }
   function applyAccent(hex){ if(hex){ root.style.setProperty('--primary',hex); root.style.setProperty('--primary-soft',hexSoft(hex)); } }
-  root.dataset.theme = localStorage.getItem('nf2.theme') || 'dark';
+  root.dataset.theme = localStorage.getItem('nf2.theme') || 'light';
   applyAccent(localStorage.getItem('nf2.accent'));
 
   /* ---- shell: sidebar + profile menu + theme button ---- */

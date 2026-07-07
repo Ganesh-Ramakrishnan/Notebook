@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -240,7 +240,7 @@
 import { getStroke } from 'https://esm.sh/perfect-freehand@1.2.3'
 
 /* ---------- theme ---------- */
-document.documentElement.dataset.theme = localStorage.getItem('nf2.theme') || 'dark'
+document.documentElement.dataset.theme = localStorage.getItem('nf2.theme') || 'light'
 document.getElementById('theme').onclick = () => {
   const h = document.documentElement
   h.dataset.theme = h.dataset.theme === 'dark' ? 'light' : 'dark'

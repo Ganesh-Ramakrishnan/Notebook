@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -302,7 +302,7 @@
     else { sidebar.classList.toggle('collapsed'); localStorage.setItem('nf2.collapsed', sidebar.classList.contains('collapsed')?'1':'0'); sync(); }
   };
   scrim.onclick=function(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); };
-  document.documentElement.dataset.theme=localStorage.getItem('nf2.theme')||'dark';
+  document.documentElement.dataset.theme=localStorage.getItem('nf2.theme')||'light';
   document.getElementById('themeBtn').onclick=function(){
     var h=document.documentElement; h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';
     localStorage.setItem('nf2.theme', h.dataset.theme);

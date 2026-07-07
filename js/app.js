@@ -69,7 +69,7 @@ function applyTheme(t) {
   localStorage.setItem('nf2.theme', t);
   $('#themeRowLabel').textContent = t === 'dark' ? 'Light theme' : 'Dark theme';
 }
-applyTheme(localStorage.getItem('nf2.theme') || 'dark');
+applyTheme(localStorage.getItem('nf2.theme') || 'light');
 const toggle = () => applyTheme(document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark');
 const themeBtn = $('#themeBtn'); if (themeBtn) themeBtn.onclick = toggle;   // optional (removed from header)
 $('#themeRow').onclick = toggle;

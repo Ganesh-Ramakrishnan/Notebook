@@ -2,7 +2,7 @@
    applies theme + accent + profile, and wires the sidebar & profile menu. */
 (function () {
   const root = document.documentElement;
-  root.dataset.theme = localStorage.getItem('nf2.theme') || 'dark';
+  root.dataset.theme = localStorage.getItem('nf2.theme') || 'light';
   const acc = localStorage.getItem('nf2.accent');
   if (acc) { const h = acc.replace('#', ''); root.style.setProperty('--primary', acc); root.style.setProperty('--primary-soft', 'rgba(' + parseInt(h.substr(0, 2), 16) + ',' + parseInt(h.substr(2, 2), 16) + ',' + parseInt(h.substr(4, 2), 16) + ',.15)'); }
 
