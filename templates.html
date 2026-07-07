@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoteFlow — Templates</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/orange.css">
+<style>
+  .tpl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:16px}
+  .tpl-card{display:block;text-decoration:none;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;cursor:pointer;transition:.16s;box-shadow:var(--shadow-sm)}
+  .tpl-card:hover{transform:translateY(-4px);border-color:var(--primary);box-shadow:var(--shadow)}
+  .tpl-ico{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;margin-bottom:12px}
+  .tpl-ico .i{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2}
+  .tpl-card h3{font-size:15px;font-weight:700;color:var(--text);margin-bottom:5px}
+  .tpl-card p{font-size:12.5px;color:var(--mute);line-height:1.5}
+  .tpl-group{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--mute);font-weight:700;margin:8px 2px 12px}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="ic-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><rect x="9.5" y="14" width="5" height="6"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.3 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.3 9 9"/></symbol>
+  <symbol id="ic-template" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></symbol>
+  <symbol id="ic-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="ic-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.1A1.6 1.6 0 0 0 6.2 8.4l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 12 4.6V4.5a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-1.1 2.7v.1a2 2 0 0 1 0 4z"/></symbol>
+  <symbol id="ic-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></symbol>
+  <symbol id="ic-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></symbol>
+  <symbol id="ic-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></symbol>
+  <symbol id="ic-check" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><polyline points="8 12 11 15 16 9"/></symbol>
+  <symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></symbol>
+  <symbol id="ic-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+</defs></svg>
+
+<div class="app">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html"><span class="bname">NoteFlow</span><span class="bsub">PRODUCTIVITY SUITE</span></a>
+    <nav class="sb-nav">
+      <a class="nav-item" data-tip="Home" href="index.html"><svg class="i"><use href="#ic-home"/></svg><span class="label">Home</span></a>
+      <a class="nav-item" data-tip="Recent" href="recent.html"><svg class="i"><use href="#ic-clock"/></svg><span class="label">Recent</span></a>
+      <a class="nav-item" data-tip="Favourites" href="favourites.html"><svg class="i"><use href="#ic-star"/></svg><span class="label">Favourites</span></a>
+      <a class="nav-item active" data-tip="Templates" href="templates.html"><svg class="i"><use href="#ic-template"/></svg><span class="label">Templates</span></a>
+      <a class="nav-item" data-tip="Trash" href="trash.html"><svg class="i"><use href="#ic-trash"/></svg><span class="label">Trash</span></a>
+    </nav>
+    <nav class="sb-nav">
+      <div class="nav-label">SYSTEM</div>
+      <a class="nav-item" data-tip="Settings" href="settings.html"><svg class="i"><use href="#ic-gear"/></svg><span class="label">Settings</span></a>
+    </nav>
+    <div class="sb-spacer"></div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <button class="panel-toggle" id="panelToggle" title="Toggle menu"><svg class="i"><use href="#ic-menu"/></svg></button>
+      <div class="crumb" style="display:flex;align-items:center;gap:8px;font-weight:600"><a href="index.html" style="color:var(--mute);text-decoration:none">Home</a><span style="color:var(--mute)">/</span><span>Templates</span></div>
+      <div class="top-right">
+        <button class="icon-btn" id="themeBtn" title="Theme"><svg class="i"><use href="#ic-contrast"/></svg></button>
+        <div class="profile">
+          <button class="huser" id="avatarBtn"><span class="uname">Ganesh</span><span class="ava-green"></span></button>
+          <div class="profile-menu" id="profileMenu" hidden>
+            <div class="pm-head"><span class="pm-ava">G</span><div><div class="pm-name">Ganesh</div><div class="pm-email">ganesh@noteflow.app</div></div></div>
+            <div class="pm-divider"></div>
+            <a class="pm-row" href="index.html"><svg class="i"><use href="#ic-home"/></svg> Back to Home</a>
+            <a class="pm-row" href="settings.html"><svg class="i"><use href="#ic-gear"/></svg> Settings</a>
+          </div>
+        </div>
+      </div>
+    </header>
+    <section class="content">
+      <div class="page-head"><div>
+        <h2 class="ph-title">Templates</h2>
+        <p class="ph-sub">Start something new — pick a template to jump straight in.</p>
+      </div></div>
+
+      <div class="tpl-group">Documents</div>
+      <div class="tpl-grid">
+        <a class="tpl-card" href="editor-orange.html?title=Untitled+document"><span class="tpl-ico c-blue"><svg class="i"><use href="#ic-doc"/></svg></span><h3>Blank document</h3><p>A clean rich-text page to start writing.</p></a>
+        <a class="tpl-card" href="editor-orange.html?title=Meeting+notes"><span class="tpl-ico c-violet"><svg class="i"><use href="#ic-doc"/></svg></span><h3>Meeting notes</h3><p>Capture agenda, decisions and action items.</p></a>
+        <a class="tpl-card" href="editor-orange.html?title=Weekly+planner"><span class="tpl-ico c-amber"><svg class="i"><use href="#ic-calendar"/></svg></span><h3>Weekly planner</h3><p>Plan tasks and goals for the week ahead.</p></a>
+        <a class="tpl-card" href="editor-orange.html?title=To-do+list"><span class="tpl-ico c-green"><svg class="i"><use href="#ic-check"/></svg></span><h3>To-do list</h3><p>A simple checklist to track what’s done.</p></a>
+      </div>
+
+      <div class="tpl-group" style="margin-top:22px">Notebook &amp; Whiteboard</div>
+      <div class="tpl-grid">
+        <a class="tpl-card" href="notebook-demo.html"><span class="tpl-ico c-amber"><svg class="i"><use href="#ic-book"/></svg></span><h3>Handwriting notebook</h3><p>Pick paper &amp; cover, then write with a stylus.</p></a>
+        <a class="tpl-card" href="whiteboard-demo.html"><span class="tpl-ico c-green"><svg class="i"><use href="#ic-board"/></svg></span><h3>Whiteboard</h3><p>Infinite canvas — mind maps, kanban, flowcharts.</p></a>
+      </div>
+    </section>
+  </main>
+  <div class="scrim" id="scrim"></div>
+</div>
+
+<script src="js/shell.js"></script>
+</body>
+</html>

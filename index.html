@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoteFlow — Orange Theme</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/orange.css">
+<style>
+  /* library view toggle + table + pagination */
+  .lib-toolbar{display:flex;justify-content:flex-end;margin:-2px 0 16px}
+  .view-toggle{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .view-toggle .vt{display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;color:var(--mute);font-weight:600;font-size:13px;padding:6px 12px;border-radius:8px;cursor:pointer}
+  .view-toggle .vt .i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .view-toggle .vt.active{background:var(--primary-soft);color:var(--primary)}
+  .lib-wrap{margin-bottom:8px}
+  .lib-new-row{display:flex;justify-content:flex-end;margin-bottom:10px}
+  .lib-new-btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-weight:600;font-size:13px;padding:7px 12px;border-radius:9px;cursor:pointer;text-decoration:none}
+  .lib-new-btn:hover{border-color:var(--primary);color:var(--primary)}
+  .lib-new-btn .i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .lib-table{width:100%;border-collapse:collapse;background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .lib-table th,.lib-table td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);font-size:13.5px;color:var(--text)}
+  .lib-table th{font-size:11px;text-transform:uppercase;letter-spacing:.5px;color:var(--mute);font-weight:700;background:var(--bg)}
+  .lib-table tr:last-child td{border-bottom:none}
+  .lib-table tbody tr{cursor:pointer;transition:.12s}
+  .lib-table tbody tr:hover{background:var(--elev)}
+  .lib-table .lt-title{display:flex;align-items:center;gap:10px;font-weight:600}
+  .lib-table .lt-ico{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;flex:none}
+  .lib-table .lt-ico .i{width:17px;height:17px;fill:none;stroke-width:2}
+  .lib-table .lt-cover{width:22px;height:28px;border-radius:2px 5px 5px 2px;border-left:2px solid rgba(255,255,255,.4);flex:none;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+  .lib-table .lt-del{border:none;background:transparent;color:var(--mute);font-size:16px;line-height:1;cursor:pointer;border-radius:6px;width:28px;height:28px}
+  .lib-table .lt-del:hover{color:#f87171;background:rgba(248,113,113,.14)}
+  .lib-empty{color:var(--mute);font-size:13.5px;padding:16px 2px}
+  .pager{display:flex;align-items:center;gap:4px;justify-content:center;margin:14px 0 4px}
+  .pager button{min-width:32px;height:32px;border:1px solid var(--line);background:var(--surface);color:var(--text);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;padding:0 8px}
+  .pager button:hover:not(:disabled){border-color:var(--primary);color:var(--primary)}
+  .pager button.active{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+  .pager button:disabled{opacity:.4;cursor:default}
+
+  /* quick notes (Keep-style) */
+  .qc{background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow-sm);padding:4px 8px;margin-bottom:16px;max-width:640px}
+  .qc.open{padding:10px 10px 8px}
+  .qc-line{width:100%;border:none;background:transparent;color:var(--text);font-size:14.5px;font-weight:600;padding:10px 8px;outline:none}
+  .qc-line::placeholder{color:var(--mute)}
+  .qc-body{width:100%;border:none;background:transparent;color:var(--text);font-size:14px;outline:none;resize:vertical;min-height:60px;line-height:1.5;padding:0 8px 8px;font-family:inherit}
+  .qc-body::placeholder{color:var(--mute)}
+  .qc-tools{display:flex;align-items:center;gap:8px;padding:8px 4px 2px;border-top:1px solid var(--line)}
+  .qc-colors{display:flex;gap:6px}
+  .qc-dot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+  .qc-dot.sel{border-color:var(--primary);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--primary)}
+  .qc-icon{width:32px;height:32px;background:transparent;color:var(--mute);border:none;border-radius:8px;cursor:pointer;display:grid;place-items:center}
+  .qc-icon:hover,.qc-icon.active{background:var(--primary-soft);color:var(--primary)}
+  .qc-icon .i{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .qc-flex{flex:1}
+  .qc-btn{padding:8px 16px;border:none;border-radius:8px;font-weight:700;font-size:13px;cursor:pointer;background:var(--primary);color:#fff}
+  .qc-btn.ghost{background:transparent;color:var(--mute)}
+  .qc-btn.ghost:hover{color:var(--text)}
+
+  .quick-board{margin-bottom:6px}
+  .quick-group-label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--mute);font-weight:700;margin:4px 2px 10px}
+  .quick-cols{columns:220px;column-gap:14px;margin-bottom:8px}
+  .quick-empty{color:var(--mute);font-size:13.5px;padding:10px 2px 18px}
+  .qnote{break-inside:avoid;display:inline-block;width:100%;margin-bottom:14px;border-radius:14px;border:1px solid rgba(0,0,0,.06);box-shadow:var(--shadow-sm);overflow:hidden;color:#1f2430}
+  .qnote .qn-body{padding:13px 14px 6px}
+  .qn-title{font-weight:800;font-size:14.5px;margin-bottom:6px;word-break:break-word;cursor:text}
+  .qn-text{font-size:13.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word;cursor:text}
+  .qn-text.muted{color:#6b7280;font-style:italic}
+  .qn-list{display:flex;flex-direction:column;gap:3px}
+  .qn-item{display:flex;align-items:flex-start;gap:8px;font-size:13.5px;line-height:1.45;cursor:pointer;padding:2px 0}
+  .qn-check{width:17px;height:17px;border:1.5px solid #57606f;border-radius:5px;display:grid;place-items:center;font-size:12px;flex:none;color:#1f2430;background:rgba(255,255,255,.45);line-height:1}
+  .qn-item.done{color:#6b7280;text-decoration:line-through}
+  .qn-item.done .qn-check{background:#4f6ef7;border-color:#4f6ef7;color:#fff}
+  .qn-bar{display:flex;align-items:center;gap:3px;padding:2px 8px 8px;opacity:0;transition:.12s}
+  .qnote:hover .qn-bar{opacity:1}
+  .qn-ico{width:28px;height:28px;border:none;background:transparent;border-radius:7px;cursor:pointer;display:grid;place-items:center;color:#4b5563}
+  .qn-ico:hover{background:rgba(0,0,0,.08)}
+  .qn-ico.on{color:#ef7415}
+  .qn-ico .i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .qn-colors{display:flex;gap:3px;margin:0 auto}
+  .qn-color{width:15px;height:15px;border-radius:50%;border:1px solid rgba(0,0,0,.18);cursor:pointer;padding:0}
+</style>
+</head>
+<body>
+
+<!-- ===== ICON SPRITE ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="ic-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.3 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.3 9 9"/></symbol>
+  <symbol id="ic-template" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></symbol>
+  <symbol id="ic-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="ic-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.1A1.6 1.6 0 0 0 6.2 8.4l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 12 4.6V4.5a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-1.1 2.7v.1a2 2 0 0 1 0 4z"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ic-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+  <symbol id="ic-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ic-spark" viewBox="0 0 24 24"><path d="M11 3 12.6 7.4 17 9l-4.4 1.6L11 15l-1.6-4.4L5 9l4.4-1.6z"/></symbol>
+  <symbol id="ic-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  <symbol id="ic-doc" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="13" y2="17"/></symbol>
+  <symbol id="ic-import" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="ic-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="2"/><line x1="12" y1="17" x2="12" y2="21"/><line x1="8" y1="21" x2="16" y2="21"/></symbol>
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><rect x="9.5" y="14" width="5" height="6"/></symbol>
+  <symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></symbol>
+  <symbol id="ic-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="ic-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></symbol>
+  <symbol id="ic-edit" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.12 2.12 0 0 1 3 3L12 15l-4 1 1-4z"/></symbol>
+  <symbol id="ic-cloud" viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/></symbol>
+  <symbol id="ic-drive" viewBox="0 0 24 24"><path d="M7.7 3h8.6l5.7 10h-8.6z"/><path d="M2 13l4.3-7.5L10.6 13 6.3 20.5z"/><path d="M8.4 20.5 12.7 13H21l-4.3 7.5z"/></symbol>
+  <symbol id="ic-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="ic-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3.5" y1="6" x2="3.51" y2="6"/><line x1="3.5" y1="12" x2="3.51" y2="12"/><line x1="3.5" y1="18" x2="3.51" y2="18"/></symbol>
+  <symbol id="ic-pin" viewBox="0 0 24 24"><line x1="12" y1="16" x2="12" y2="22"/><path d="M9 4h6l-1 7 2.5 2.5V16H7.5v-2.5L10 11z"/></symbol>
+  <symbol id="ic-checkbox" viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2.5"/><polyline points="8 12 11 15 16 9"/></symbol>
+</defs></svg>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html"><span class="bname">NoteFlow</span><span class="bsub">PRODUCTIVITY SUITE</span></a>
+
+    <nav class="sb-nav">
+      <a class="nav-item active" data-tip="Home" data-name="Home" href="index.html"><svg class="i"><use href="#ic-home"/></svg><span class="label">Home</span></a>
+      <a class="nav-item" data-tip="Recent" data-name="Recent" href="recent.html"><svg class="i"><use href="#ic-clock"/></svg><span class="label">Recent</span></a>
+      <a class="nav-item" data-tip="Favourites" data-name="Favourites" href="favourites.html"><svg class="i"><use href="#ic-star"/></svg><span class="label">Favourites</span></a>
+      <a class="nav-item" data-tip="Templates" data-name="Templates" href="templates.html"><svg class="i"><use href="#ic-template"/></svg><span class="label">Templates</span></a>
+      <a class="nav-item" data-tip="Trash" data-name="Trash" href="trash.html"><svg class="i"><use href="#ic-trash"/></svg><span class="label">Trash</span></a>
+    </nav>
+
+    <nav class="sb-nav">
+      <div class="nav-label">SYSTEM</div>
+      <a class="nav-item" data-tip="Settings" data-name="Settings" href="settings.html"><svg class="i"><use href="#ic-gear"/></svg><span class="label">Settings</span></a>
+    </nav>
+
+    <div class="sb-spacer"></div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <header class="topbar">
+      <button class="panel-toggle" id="panelToggle" title="Toggle menu"><svg class="i"><use href="#ic-menu"/></svg></button>
+      <label class="search"><svg class="i"><use href="#ic-search"/></svg><input type="text" placeholder="Search…"></label>
+      <div class="top-right">
+        <button class="icon-btn" title="Notifications"><svg class="i"><use href="#ic-bell"/></svg></button>
+        <div class="profile">
+          <button class="huser" id="avatarBtn"><span class="uname">Ganesh</span><span class="ava-green"></span></button>
+          <div class="profile-menu" id="profileMenu" hidden>
+            <div class="pm-head"><span class="pm-ava">G</span>
+              <div><div class="pm-name">Ganesh</div><div class="pm-email">ganesh@noteflow.app</div></div></div>
+            <div class="pm-plan"><span>Plan</span><span class="plan-badge">Pro Active</span></div>
+            <button class="pm-upgrade"><svg class="i"><use href="#ic-spark"/></svg> Upgrade to NoteFlow+</button>
+            <div class="pm-divider"></div>
+            <button class="pm-row"><svg class="i"><use href="#ic-gear"/></svg> Settings</button>
+            <button class="pm-row" id="themeRow"><svg class="i"><use href="#ic-contrast"/></svg> <span id="themeRowLabel">Light theme</span></button>
+            <div class="pm-divider"></div>
+            <button class="pm-row danger"><svg class="i"><use href="#ic-logout"/></svg> Sign out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="content">
+      <!-- page head -->
+      <div class="page-head">
+        <div>
+          <h2 class="ph-title" id="pageTitle">Home</h2>
+          <p class="ph-sub" id="pageSub">Welcome back, Ganesh — pick up where you left off.</p>
+        </div>
+        <div class="new-wrap">
+          <button class="btn-primary" id="newBtn"><svg class="i"><use href="#ic-plus"/></svg> New <svg class="i caret"><use href="#ic-chevron"/></svg></button>
+          <div class="new-menu" id="newMenu" hidden>
+            <button class="nm-item" data-act="notebook"><svg class="i"><use href="#ic-book"/></svg><span class="nm-lbl">Notebook</span></button>
+            <button class="nm-item" data-act="text"><svg class="i"><use href="#ic-doc"/></svg><span class="nm-lbl">Text Document</span></button>
+            <button class="nm-item" data-act="whiteboard"><svg class="i"><use href="#ic-board"/></svg><span class="nm-lbl">Whiteboard</span></button>
+            <button class="nm-item" data-act="folder"><svg class="i"><use href="#ic-folder"/></svg><span class="nm-lbl">Folder</span></button>
+            <button class="nm-item" data-act="quick"><svg class="i"><use href="#ic-edit"/></svg><span class="nm-lbl">Quick note</span></button>
+            <div class="nm-sep"></div>
+            <button class="nm-item" data-act="gdrive"><svg class="i drive"><use href="#ic-drive"/></svg><span class="nm-lbl">Google Drive</span><span class="nm-beta">BETA</span></button>
+            <button class="nm-item" data-act="onedrive"><svg class="i one"><use href="#ic-cloud"/></svg><span class="nm-lbl">OneDrive (Personal)</span></button>
+            <div class="nm-tip">Tip: Double-tap the “+ New” button to create a Quick note.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick notes (Keep-style) -->
+      <div class="sec-label">Quick notes</div>
+      <div class="qc" id="qc">
+        <input id="qcLine" class="qc-line" placeholder="Take a quick note…" autocomplete="off">
+        <div class="qc-more" id="qcMore" hidden>
+          <textarea id="qcBody" class="qc-body" placeholder="Take a note…"></textarea>
+          <div class="qc-tools">
+            <div class="qc-colors" id="qcColors"></div>
+            <button class="qc-icon" id="qcCheck" title="Checklist"><svg class="i"><use href="#ic-checkbox"/></svg></button>
+            <span class="qc-flex"></span>
+            <button class="qc-btn ghost" id="qcCancel">Close</button>
+            <button class="qc-btn" id="qcSave">Add</button>
+          </div>
+        </div>
+      </div>
+      <div class="quick-board" id="quickBoard"></div>
+
+      <!-- saved libraries (notebooks / whiteboards / documents) -->
+      <div class="lib-toolbar">
+        <div class="view-toggle" id="viewToggle">
+          <button class="vt" data-view="card"><svg class="i"><use href="#ic-grid"/></svg> Cards</button>
+          <button class="vt" data-view="table"><svg class="i"><use href="#ic-list"/></svg> Table</button>
+        </div>
+      </div>
+
+      <div class="sec-label">My notebooks</div>
+      <div class="lib-wrap" id="notebookLib"></div>
+
+      <div class="sec-label">My whiteboards</div>
+      <div class="lib-wrap" id="whiteboardLib"></div>
+
+      <div class="sec-label">My documents</div>
+      <div class="lib-wrap" id="documentLib"></div>
+    </section>
+  </main>
+
+  <div class="scrim" id="scrim"></div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

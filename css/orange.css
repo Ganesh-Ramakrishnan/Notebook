@@ -1,0 +1,42 @@
+/* ============ Orange theme — unified (sidebar matches the theme) ============
+   Loaded AFTER styles.css. Only redefines colour tokens; the base rules
+   already use these tokens, so the sidebar follows the theme:
+   - LIGHT: light sidebar + light content
+   - DARK : a complete deep charcoal scheme (own colours) */
+
+:root{
+  /* ===== DARK — complete deep charcoal + orange ===== */
+  --bg:#0f1012;            /* app background */
+  --surface:#191a1e;       /* cards */
+  --sidebar:#15161a;       /* sidebar (slightly distinct from bg) */
+  --elev:#23242b;
+  --line:#292a32;
+  --text:#f1f1f4;
+  --mute:#9596a2;
+  --primary:#f7842b; --primary-2:#ffa257; --primary-soft:rgba(247,132,43,.16);
+  --btn-grad:linear-gradient(135deg,#ff934a,#f47c20); --btn-text:#ffffff;
+  --teal:#34d399; --green:#34d399;
+  --ring:0 0 0 3px rgba(247,132,43,.25);
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 20px 46px rgba(0,0,0,.6);
+  --shadow-sm:0 4px 16px rgba(0,0,0,.45);
+}
+
+[data-theme="light"]{
+  /* ===== LIGHT — clean, unified (light sidebar too) ===== */
+  --bg:#f4f5f9;
+  --surface:#ffffff;
+  --sidebar:#ffffff;       /* light sidebar, matches content */
+  --elev:#eff1f6;
+  --line:#e7e9f1;
+  --text:#1a1b24;
+  --mute:#6c6d7b;
+  --primary:#ef7415; --primary-2:#ff944d; --primary-soft:rgba(239,116,21,.10);
+  --btn-grad:linear-gradient(135deg,#ff8a2e,#ef7415); --btn-text:#ffffff;
+  --teal:#0fb39a; --green:#16a86b;
+  --ring:0 0 0 3px rgba(239,116,21,.16);
+  --shadow:0 1px 2px rgba(20,22,34,.05),0 16px 36px rgba(20,22,34,.10);
+  --shadow-sm:0 6px 18px rgba(20,22,34,.08);
+}
+
+/* brand text uses the orange accent in both themes */
+.brand .bname{color:var(--primary)}

@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoteFlow — Settings</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/orange.css">
+<style>
+  .set-wrap{max-width:760px}
+  .set-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow-sm);padding:6px 20px;margin-bottom:18px}
+  .set-card h3{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--mute);font-weight:700;padding:16px 0 4px}
+  .set-row{display:flex;align-items:center;gap:16px;padding:16px 0;border-top:1px solid var(--line)}
+  .set-row:first-of-type{border-top:none}
+  .set-row .sr-main{flex:1;min-width:0}
+  .sr-label{font-size:14.5px;font-weight:600}
+  .sr-desc{font-size:12.5px;color:var(--mute);margin-top:3px;line-height:1.5}
+  .sr-ctrl{flex:none;display:flex;align-items:center;gap:10px}
+
+  .seg{display:inline-flex;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:3px}
+  .seg button{display:inline-flex;align-items:center;gap:6px;border:none;background:transparent;color:var(--mute);font-weight:600;font-size:13px;padding:7px 14px;border-radius:8px;cursor:pointer}
+  .seg button.active{background:var(--primary-soft);color:var(--primary)}
+  .seg .i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+
+  .swatches{display:flex;gap:8px}
+  .swatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line);cursor:pointer;padding:0}
+  .swatch.sel{border-color:var(--text);box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--text)}
+
+  .set-input{width:100%;max-width:280px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font-size:14px;outline:none}
+  .set-input:focus{border-color:var(--primary);box-shadow:var(--ring,0 0 0 3px var(--primary-soft))}
+  .set-select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg);color:var(--text);font-size:13.5px;font-weight:600;cursor:pointer}
+
+  /* toggle switch */
+  .switch{position:relative;width:44px;height:26px;flex:none;cursor:pointer}
+  .switch input{opacity:0;width:0;height:0}
+  .switch .track{position:absolute;inset:0;background:var(--line);border-radius:20px;transition:.15s}
+  .switch .thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+  .switch input:checked + .track{background:var(--primary)}
+  .switch input:checked + .track + .thumb{transform:translateX(18px)}
+
+  .btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-weight:600;font-size:13.5px;padding:9px 15px;border-radius:10px;cursor:pointer;text-decoration:none}
+  .btn:hover{border-color:var(--primary);color:var(--primary)}
+  .btn .i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2}
+  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
+  .btn.primary:hover{filter:brightness(1.05);color:#fff}
+  .btn.danger{border-color:rgba(229,72,77,.5);color:#e5484d}
+  .btn.danger:hover{background:rgba(229,72,77,.12)}
+
+  .avatar-lg{width:56px;height:56px;border-radius:50%;background:var(--primary);color:#fff;display:grid;place-items:center;font-size:22px;font-weight:800;flex:none}
+
+  .storage-bar{height:10px;border-radius:6px;background:var(--elev);overflow:hidden;margin:8px 0 6px}
+  .storage-fill{height:100%;background:var(--primary);border-radius:6px;transition:width .3s}
+  .storage-txt{font-size:12.5px;color:var(--mute)}
+
+  .about-feats{display:grid;grid-template-columns:repeat(2,1fr);gap:6px 18px;font-size:13px;color:var(--mute);padding:6px 0 14px}
+  .about-feats span{display:flex;align-items:center;gap:8px}
+  .about-feats .dot{width:6px;height:6px;border-radius:50%;background:var(--primary);flex:none}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--text);color:var(--bg);font-size:13.5px;font-weight:600;padding:10px 18px;border-radius:10px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.2s;z-index:200}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media(max-width:560px){ .set-row{flex-wrap:wrap} .about-feats{grid-template-columns:1fr} }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="ic-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><rect x="9.5" y="14" width="5" height="6"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.3 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.3 9 9"/></symbol>
+  <symbol id="ic-book" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></symbol>
+  <symbol id="ic-template" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></symbol>
+  <symbol id="ic-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="ic-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.1A1.6 1.6 0 0 0 6.2 8.4l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 12 4.6V4.5a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-1.1 2.7v.1a2 2 0 0 1 0 4z"/></symbol>
+  <symbol id="ic-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5 19 19M19 5l-1.5 1.5M6.5 17.5 5 19"/></symbol>
+  <symbol id="ic-moon" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 0 1 11.2 3 7 7 0 1 0 21 12.8z"/></symbol>
+  <symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></symbol>
+  <symbol id="ic-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3.5" y1="6" x2="3.51" y2="6"/><line x1="3.5" y1="12" x2="3.51" y2="12"/><line x1="3.5" y1="18" x2="3.51" y2="18"/></symbol>
+  <symbol id="ic-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></symbol>
+  <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+  <symbol id="ic-logout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></symbol>
+  <symbol id="ic-spark" viewBox="0 0 24 24"><path d="M11 3 12.6 7.4 17 9l-4.4 1.6L11 15l-1.6-4.4L5 9l4.4-1.6z"/></symbol>
+  <symbol id="ic-contrast2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/></symbol>
+</defs></svg>
+
+<div class="app">
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html"><span class="bname">NoteFlow</span><span class="bsub">PRODUCTIVITY SUITE</span></a>
+    <nav class="sb-nav">
+      <a class="nav-item" data-tip="Home" href="index.html"><svg class="i"><use href="#ic-home"/></svg><span class="label">Home</span></a>
+      <a class="nav-item" data-tip="Recent" href="recent.html"><svg class="i"><use href="#ic-clock"/></svg><span class="label">Recent</span></a>
+      <a class="nav-item" data-tip="Favourites" href="favourites.html"><svg class="i"><use href="#ic-star"/></svg><span class="label">Favourites</span></a>
+      <a class="nav-item" data-tip="Templates" href="templates.html"><svg class="i"><use href="#ic-template"/></svg><span class="label">Templates</span></a>
+      <a class="nav-item" data-tip="Trash" href="trash.html"><svg class="i"><use href="#ic-trash"/></svg><span class="label">Trash</span></a>
+    </nav>
+    <nav class="sb-nav">
+      <div class="nav-label">SYSTEM</div>
+      <a class="nav-item active" data-tip="Settings" href="settings.html"><svg class="i"><use href="#ic-gear"/></svg><span class="label">Settings</span></a>
+    </nav>
+    <div class="sb-spacer"></div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+    <header class="topbar">
+      <button class="panel-toggle" id="panelToggle" title="Toggle menu"><svg class="i"><use href="#ic-menu"/></svg></button>
+      <div class="crumb" style="display:flex;align-items:center;gap:8px;font-weight:600"><a href="index.html" style="color:var(--mute);text-decoration:none">Home</a><span style="color:var(--mute)">/</span><span>Settings</span></div>
+      <div class="top-right">
+        <button class="icon-btn" id="themeBtn" title="Theme"><svg class="i"><use href="#ic-contrast"/></svg></button>
+        <div class="profile">
+          <button class="huser" id="avatarBtn"><span class="uname" id="tbName">Ganesh</span><span class="ava-green"></span></button>
+          <div class="profile-menu" id="profileMenu" hidden>
+            <div class="pm-head"><span class="pm-ava" id="pmAva">G</span>
+              <div><div class="pm-name" id="pmName">Ganesh</div><div class="pm-email" id="pmEmail">ganesh@noteflow.app</div></div></div>
+            <div class="pm-divider"></div>
+            <a class="pm-row" href="index.html"><svg class="i"><use href="#ic-home"/></svg> Back to Home</a>
+            <button class="pm-row danger"><svg class="i"><use href="#ic-logout"/></svg> Sign out</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <section class="content">
+      <div class="page-head">
+        <div>
+          <h2 class="ph-title">Settings</h2>
+          <p class="ph-sub">Personalise NoteFlow — appearance, library and your data.</p>
+        </div>
+      </div>
+
+      <div class="set-wrap">
+
+        <!-- Profile -->
+        <div class="set-card">
+          <h3>Profile</h3>
+          <div class="set-row">
+            <span class="avatar-lg" id="avaPreview">G</span>
+            <div class="sr-main">
+              <div class="sr-label">Display name</div>
+              <div class="sr-desc">Shown in the top bar and profile menu.</div>
+            </div>
+            <div class="sr-ctrl"><input class="set-input" id="inName" type="text" placeholder="Your name"></div>
+          </div>
+          <div class="set-row">
+            <div class="sr-main"><div class="sr-label">Email</div><div class="sr-desc">Used on your profile card.</div></div>
+            <div class="sr-ctrl"><input class="set-input" id="inEmail" type="email" placeholder="you@example.com"></div>
+          </div>
+          <div class="set-row">
+            <div class="sr-main"></div>
+            <div class="sr-ctrl"><button class="btn primary" id="saveProfile">Save profile</button></div>
+          </div>
+        </div>
+
+        <!-- Appearance -->
+        <div class="set-card">
+          <h3>Appearance</h3>
+          <div class="set-row">
+            <div class="sr-main"><div class="sr-label">Theme</div><div class="sr-desc">Light or dark across the whole app.</div></div>
+            <div class="sr-ctrl">
+              <div class="seg" id="themeSeg">
+                <button data-theme="light"><svg class="i"><use href="#ic-sun"/></svg> Light</button>
+                <button data-theme="dark"><svg class="i"><use href="#ic-moon"/></svg> Dark</button>
+              </div>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="sr-main"><div class="sr-label">Accent colour</div><div class="sr-desc">The primary highlight colour.</div></div>
+            <div class="sr-ctrl"><div class="swatches" id="accentSwatches"></div></div>
+          </div>
+        </div>
+
+        <!-- Library -->
+        <div class="set-card">
+          <h3>Library</h3>
+          <div class="set-row">
+            <div class="sr-main"><div class="sr-label">Default view</div><div class="sr-desc">How saved files appear on Home.</div></div>
+            <div class="sr-ctrl">
+              <div class="seg" id="viewSeg">
+                <button data-view="card"><svg class="i"><use href="#ic-grid"/></svg> Cards</button>
+                <button data-view="table"><svg class="i"><use href="#ic-list"/></svg> Table</button>
+              </div>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="sr-main"><div class="sr-label">Items per page</div><div class="sr-desc">Pagination size for each library.</div></div>
+            <div class="sr-ctrl">
+              <select class="set-select" id="pageSize"><option>6</option><option>8</option><option>12</option><option>20</option></select>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="sr-main"><div class="sr-label">Collapse sidebar by default</div><div class="sr-desc">Start with the icon-only rail.</div></div>
+            <div class="sr-ctrl"><label class="switch"><input type="checkbox" id="swCollapse"><span class="track"></span><span class="thumb"></span></label></div>
+          </div>
+        </div>
+
+        <!-- Data -->
+        <div class="set-card">
+          <h3>Data &amp; storage</h3>
+          <div class="set-row">
+            <div class="sr-main">
+              <div class="sr-label">Storage used</div>
+              <div class="storage-bar"><div class="storage-fill" id="storageFill" style="width:0%"></div></div>
+              <div class="storage-txt" id="storageTxt">—</div>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="sr-main"><div class="sr-label">Backup</div><div class="sr-desc">Export everything to a JSON file, or import a backup.</div></div>
+            <div class="sr-ctrl">
+              <button class="btn" id="exportBtn"><svg class="i"><use href="#ic-download"/></svg> Export</button>
+              <button class="btn" id="importBtn"><svg class="i"><use href="#ic-upload"/></svg> Import</button>
+              <input type="file" id="importFile" accept="application/json" hidden>
+            </div>
+          </div>
+          <div class="set-row">
+            <div class="sr-main"><div class="sr-label">Reset</div><div class="sr-desc">Delete all notebooks, whiteboards, documents, quick notes and folders on this device.</div></div>
+            <div class="sr-ctrl"><button class="btn danger" id="clearBtn"><svg class="i"><use href="#ic-trash"/></svg> Clear all data</button></div>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="set-card">
+          <h3>About</h3>
+          <div class="set-row">
+            <div class="sr-main">
+              <div class="sr-label">NoteFlow <span style="color:var(--mute);font-weight:600">v2 · R&amp;D prototype</span></div>
+              <div class="about-feats">
+                <span><span class="dot"></span> Handwriting notebook</span>
+                <span><span class="dot"></span> Rich text editor</span>
+                <span><span class="dot"></span> Infinite whiteboard</span>
+                <span><span class="dot"></span> Quick (sticky) notes</span>
+                <span><span class="dot"></span> Folders &amp; libraries</span>
+                <span><span class="dot"></span> Offline · localStorage</span>
+              </div>
+              <div class="sr-desc">Runs fully offline in your browser. No account or backend needed for the prototype.</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+  <div class="scrim" id="scrim"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const $ = s => document.querySelector(s);
+  const root = document.documentElement;
+  const ACCENTS = ['#ef7415','#1f6feb','#8b7bff','#16a86b','#e5484d','#f5a524','#0fb39a','#f472b6'];
+
+  /* ---- apply saved prefs ---- */
+  function hexSoft(hex){ const h=hex.replace('#',''); return 'rgba('+parseInt(h.substr(0,2),16)+','+parseInt(h.substr(2,2),16)+','+parseInt(h.substr(4,2),16)+',.15)'; }
+  function applyAccent(hex){ if(hex){ root.style.setProperty('--primary',hex); root.style.setProperty('--primary-soft',hexSoft(hex)); } }
+  root.dataset.theme = localStorage.getItem('nf2.theme') || 'dark';
+  applyAccent(localStorage.getItem('nf2.accent'));
+
+  /* ---- shell: sidebar + profile menu + theme button ---- */
+  const sidebar=$('#sidebar'), scrim=$('#scrim'), pt=$('#panelToggle');
+  if(localStorage.getItem('nf2.collapsed')==='1') sidebar.classList.add('collapsed');
+  pt.onclick=()=>{ if(window.innerWidth<=600){ sidebar.classList.toggle('open'); scrim.classList.toggle('show',sidebar.classList.contains('open')); }
+    else { sidebar.classList.toggle('collapsed'); localStorage.setItem('nf2.collapsed', sidebar.classList.contains('collapsed')?'1':'0'); } };
+  scrim.onclick=()=>{ sidebar.classList.remove('open'); scrim.classList.remove('show'); };
+  const pMenu=$('#profileMenu');
+  $('#avatarBtn').onclick=e=>{ e.stopPropagation(); pMenu.hidden=!pMenu.hidden; };
+  document.addEventListener('click', e=>{ if(!pMenu.contains(e.target) && !$('#avatarBtn').contains(e.target)) pMenu.hidden=true; });
+  $('#themeBtn').onclick=()=>setTheme(root.dataset.theme==='dark'?'light':'dark');
+
+  let toastT=null;
+  function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),1800); }
+
+  /* ---- profile ---- */
+  function loadProfile(){ try{ return JSON.parse(localStorage.getItem('nf.profile'))||{}; }catch(e){ return {}; } }
+  function applyProfileUI(){ const p=loadProfile(); const name=p.name||'Ganesh', email=p.email||'ganesh@noteflow.app', ini=(name.trim()[0]||'G').toUpperCase();
+    $('#inName').value=p.name||''; $('#inEmail').value=p.email||'';
+    $('#tbName').textContent=name; $('#pmName').textContent=name; $('#pmEmail').textContent=email; $('#pmAva').textContent=ini; $('#avaPreview').textContent=ini; }
+  applyProfileUI();
+  $('#inName').addEventListener('input', ()=>{ const v=($('#inName').value.trim()[0]||'G').toUpperCase(); $('#avaPreview').textContent=v; });
+  $('#saveProfile').onclick=()=>{ const p={ name:$('#inName').value.trim(), email:$('#inEmail').value.trim() };
+    localStorage.setItem('nf.profile', JSON.stringify(p)); applyProfileUI(); toast('Profile saved'); };
+
+  /* ---- theme ---- */
+  function setTheme(t){ root.dataset.theme=t; localStorage.setItem('nf2.theme',t); syncTheme(); }
+  function syncTheme(){ document.querySelectorAll('#themeSeg button').forEach(b=>b.classList.toggle('active', b.dataset.theme===root.dataset.theme)); }
+  document.querySelectorAll('#themeSeg button').forEach(b=> b.onclick=()=>setTheme(b.dataset.theme));
+  syncTheme();
+
+  /* ---- accent ---- */
+  const swWrap=$('#accentSwatches'); let curAccent=localStorage.getItem('nf2.accent')||ACCENTS[0];
+  ACCENTS.forEach(c=>{ const b=document.createElement('button'); b.className='swatch'; b.style.background=c; b.dataset.c=c;
+    b.onclick=()=>{ curAccent=c; localStorage.setItem('nf2.accent',c); applyAccent(c); syncAccent(); toast('Accent updated'); };
+    swWrap.appendChild(b); });
+  function syncAccent(){ swWrap.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('sel', s.dataset.c===curAccent)); }
+  syncAccent();
+
+  /* ---- library ---- */
+  let curView=localStorage.getItem('nf2.libview')||'card';
+  document.querySelectorAll('#viewSeg button').forEach(b=> b.onclick=()=>{ curView=b.dataset.view; localStorage.setItem('nf2.libview',curView); syncView(); });
+  function syncView(){ document.querySelectorAll('#viewSeg button').forEach(b=>b.classList.toggle('active', b.dataset.view===curView)); }
+  syncView();
+  const pageSel=$('#pageSize'); pageSel.value = String(parseInt(localStorage.getItem('nf2.pagesize'),10)||8);
+  pageSel.onchange=()=>{ localStorage.setItem('nf2.pagesize', pageSel.value); toast('Saved'); };
+  const swC=$('#swCollapse'); swC.checked = localStorage.getItem('nf2.collapsed')==='1';
+  swC.onchange=()=>{ localStorage.setItem('nf2.collapsed', swC.checked?'1':'0'); };
+
+  /* ---- storage meter ---- */
+  const NF_KEYS = () => { const ks=[]; for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k && (k.startsWith('nf.')||k.startsWith('nf2.'))) ks.push(k); } return ks; };
+  function bytes(){ let n=0; NF_KEYS().forEach(k=>{ n += (k.length + (localStorage.getItem(k)||'').length); }); return n*2; }
+  function fmtKB(b){ return b>1048576 ? (b/1048576).toFixed(2)+' MB' : Math.round(b/1024)+' KB'; }
+  function updateStorage(){ const b=bytes(), quota=5*1024*1024; const pct=Math.min(100, Math.round(b/quota*100));
+    $('#storageFill').style.width=pct+'%'; $('#storageTxt').textContent=fmtKB(b)+' used of ~5 MB ('+pct+'%) · '+NF_KEYS().length+' items'; }
+  updateStorage();
+
+  /* ---- export / import / clear ---- */
+  $('#exportBtn').onclick=()=>{ const data={}; NF_KEYS().forEach(k=> data[k]=localStorage.getItem(k));
+    const blob=new Blob([JSON.stringify({ _app:'NoteFlow', _v:2, data }, null, 2)], {type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='noteflow-backup.json'; a.click(); URL.revokeObjectURL(a.href); toast('Backup exported'); };
+  $('#importBtn').onclick=()=>$('#importFile').click();
+  $('#importFile').addEventListener('change', e=>{ const f=e.target.files[0]; if(!f) return; const r=new FileReader();
+    r.onload=()=>{ try{ const parsed=JSON.parse(r.result); const data=parsed.data||parsed; if(typeof data!=='object') throw 0;
+        if(!confirm('Import this backup? It will overwrite matching data on this device.')) return;
+        Object.keys(data).forEach(k=>{ if(k.startsWith('nf.')||k.startsWith('nf2.')) localStorage.setItem(k, data[k]); });
+        applyProfileUI(); updateStorage(); toast('Backup imported'); setTimeout(()=>location.reload(),700);
+      }catch(err){ alert('That doesn’t look like a NoteFlow backup file.'); } };
+    r.readAsText(f); e.target.value=''; });
+  $('#clearBtn').onclick=()=>{ if(!confirm('Delete ALL NoteFlow data on this device? This cannot be undone.')) return;
+    if(!confirm('Really delete everything? Your notebooks, whiteboards, documents, quick notes and folders will be gone.')) return;
+    NF_KEYS().forEach(k=>{ if(k!=='nf2.theme'&&k!=='nf2.accent') localStorage.removeItem(k); });
+    applyProfileUI(); updateStorage(); toast('All data cleared'); };
+})();
+</script>
+</body>
+</html>

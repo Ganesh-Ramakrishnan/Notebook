@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NoteFlow — Editor</title>
+<link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="css/orange.css">
+<link rel="stylesheet" href="css/editor.css">
+
+<!-- Word import (mammoth, UMD global) -->
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.12.0/mammoth.browser.min.js"></script>
+
+<!-- Tiptap v2 via CDN (no build step). One pinned version => shared ProseMirror. -->
+<script type="importmap">
+{
+  "imports": {
+    "@tiptap/core": "https://esm.sh/@tiptap/core@2.27.2?external=@tiptap/pm",
+    "@tiptap/pm": "https://esm.sh/@tiptap/pm@2.27.2",
+    "@tiptap/pm/": "https://esm.sh/@tiptap/pm@2.27.2/",
+    "@tiptap/suggestion": "https://esm.sh/@tiptap/suggestion@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-code-block-lowlight": "https://esm.sh/@tiptap/extension-code-block-lowlight@2.27.2?external=@tiptap/core,@tiptap/pm,lowlight",
+    "lowlight": "https://esm.sh/lowlight@3.3.0",
+    "@tiptap/starter-kit": "https://esm.sh/@tiptap/starter-kit@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-underline": "https://esm.sh/@tiptap/extension-underline@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-link": "https://esm.sh/@tiptap/extension-link@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-image": "https://esm.sh/@tiptap/extension-image@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-task-list": "https://esm.sh/@tiptap/extension-task-list@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-task-item": "https://esm.sh/@tiptap/extension-task-item@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-text-align": "https://esm.sh/@tiptap/extension-text-align@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-highlight": "https://esm.sh/@tiptap/extension-highlight@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-text-style": "https://esm.sh/@tiptap/extension-text-style@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-color": "https://esm.sh/@tiptap/extension-color@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-subscript": "https://esm.sh/@tiptap/extension-subscript@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-superscript": "https://esm.sh/@tiptap/extension-superscript@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-placeholder": "https://esm.sh/@tiptap/extension-placeholder@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-character-count": "https://esm.sh/@tiptap/extension-character-count@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-table": "https://esm.sh/@tiptap/extension-table@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-table-row": "https://esm.sh/@tiptap/extension-table-row@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-table-header": "https://esm.sh/@tiptap/extension-table-header@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-table-cell": "https://esm.sh/@tiptap/extension-table-cell@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-typography": "https://esm.sh/@tiptap/extension-typography@2.27.2?external=@tiptap/core,@tiptap/pm",
+    "@tiptap/extension-font-family": "https://esm.sh/@tiptap/extension-font-family@2.27.2?external=@tiptap/core,@tiptap/pm"
+  }
+}
+</script>
+</head>
+<body>
+
+<!-- ===== ICON SPRITE ===== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+  <symbol id="ic-menu" viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="ic-home" viewBox="0 0 24 24"><path d="M3 9.5 12 3l9 6.5"/><path d="M5 10v10h14V10"/><rect x="9.5" y="14" width="5" height="6"/></symbol>
+  <symbol id="ic-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 16 14"/></symbol>
+  <symbol id="ic-star" viewBox="0 0 24 24"><polygon points="12 2 15 9 22 9.3 16.5 14 18.5 21 12 17 5.5 21 7.5 14 2 9.3 9 9"/></symbol>
+  <symbol id="ic-template" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></symbol>
+  <symbol id="ic-trash" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></symbol>
+  <symbol id="ic-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.6 1.6 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.6 1.6 0 0 0-2.7 1.1V21a2 2 0 0 1-4 0v-.1A1.6 1.6 0 0 0 7 19.4l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.6 1.6 0 0 0 4.6 15H4.5a2 2 0 0 1 0-4h.1A1.6 1.6 0 0 0 6.2 8.4l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.6 1.6 0 0 0 12 4.6V4.5a2 2 0 0 1 4 0v.1a1.6 1.6 0 0 0 2.7 1.1l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.6 1.6 0 0 0-1.1 2.7v.1a2 2 0 0 1 0 4z"/></symbol>
+  <symbol id="ic-contrast" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18a9 9 0 0 0 0-18z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ic-back" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></symbol>
+  <symbol id="ic-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.6" y1="13.5" x2="15.4" y2="17.5"/><line x1="15.4" y1="6.5" x2="8.6" y2="10.5"/></symbol>
+  <symbol id="ic-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.6" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.6" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="ic-undo" viewBox="0 0 24 24"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-5a4 4 0 0 0-4-4H4"/></symbol>
+  <symbol id="ic-redo" viewBox="0 0 24 24"><polyline points="15 14 20 9 15 4"/><path d="M4 20v-5a4 4 0 0 1 4-4h16"/></symbol>
+  <symbol id="ic-type" viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></symbol>
+  <symbol id="ic-h1" viewBox="0 0 24 24"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="m17 12 3-2v8"/></symbol>
+  <symbol id="ic-h2" viewBox="0 0 24 24"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M21 18h-4c0-4 4-3 4-6 0-1.5-2-2.5-4-1"/></symbol>
+  <symbol id="ic-h3" viewBox="0 0 24 24"><path d="M4 12h8"/><path d="M4 18V6"/><path d="M12 18V6"/><path d="M17.5 10.5c1.7-1 3.5 0 3.5 1.5a2 2 0 0 1-2 2"/><path d="M17 17.5c2 1.5 4 .3 4-1.5a2 2 0 0 0-2-2"/></symbol>
+  <symbol id="ic-bold" viewBox="0 0 24 24"><path d="M6 12h9a4 4 0 0 1 0 8H7a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h7a4 4 0 0 1 0 8"/></symbol>
+  <symbol id="ic-italic" viewBox="0 0 24 24"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></symbol>
+  <symbol id="ic-underline" viewBox="0 0 24 24"><path d="M6 4v6a6 6 0 0 0 12 0V4"/><line x1="4" y1="20" x2="20" y2="20"/></symbol>
+  <symbol id="ic-strike" viewBox="0 0 24 24"><path d="M16 4H9a3 3 0 0 0-2.83 4"/><path d="M14 12a4 4 0 0 1 0 8H6"/><line x1="4" y1="12" x2="20" y2="12"/></symbol>
+  <symbol id="ic-list" viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3.5" y1="6" x2="3.51" y2="6"/><line x1="3.5" y1="12" x2="3.51" y2="12"/><line x1="3.5" y1="18" x2="3.51" y2="18"/></symbol>
+  <symbol id="ic-list-ol" viewBox="0 0 24 24"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.4-2-1"/></symbol>
+  <symbol id="ic-checklist" viewBox="0 0 24 24"><path d="m3 7 2 2 4-4"/><path d="m3 17 2 2 4-4"/><line x1="13" y1="6" x2="21" y2="6"/><line x1="13" y1="12" x2="21" y2="12"/><line x1="13" y1="18" x2="21" y2="18"/></symbol>
+  <symbol id="ic-quote" viewBox="0 0 24 24"><path d="M4 20c3 0 5-2 5-5V6H3v7h3c0 2-1 3-2 3z"/><path d="M15 20c3 0 5-2 5-5V6h-6v7h3c0 2-1 3-2 3z"/></symbol>
+  <symbol id="ic-code" viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
+  <symbol id="ic-subscript" viewBox="0 0 24 24"><path d="m4 5 8 8"/><path d="m12 5-8 8"/><path d="M20 19h-4c0-1.5.4-2 1.5-2.5S20 15.3 20 14c0-.5-.2-.9-.5-1.3a2.1 2.1 0 0 0-2.6-.4c-.4.2-.7.6-.9 1"/></symbol>
+  <symbol id="ic-superscript" viewBox="0 0 24 24"><path d="m4 19 8-8"/><path d="m12 19-8-8"/><path d="M20 12h-4c0-1.5.4-2 1.5-2.5S20 8.3 20 7c0-.5-.2-.9-.5-1.3a2.1 2.1 0 0 0-2.6-.4c-.4.2-.7.6-.9 1"/></symbol>
+  <symbol id="ic-codeblock" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><polyline points="9 9 7 12 9 15"/><polyline points="15 9 17 12 15 15"/></symbol>
+  <symbol id="ic-callout" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></symbol>
+  <symbol id="ic-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol>
+  <symbol id="ic-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.1-3.1a2 2 0 0 0-2.8 0L6 21"/></symbol>
+  <symbol id="ic-table" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M3 15h18"/><path d="M12 3v18"/></symbol>
+  <symbol id="ic-hr" viewBox="0 0 24 24"><line x1="4" y1="12" x2="20" y2="12"/></symbol>
+  <symbol id="ic-droplet" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5s-3.5-4-4-6.5c-.5 2.5-2 4.9-4 6.5C6 11.1 5 13 5 15a7 7 0 0 0 7 7z"/></symbol>
+  <symbol id="ic-marker" viewBox="0 0 24 24"><path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></symbol>
+  <symbol id="ic-eraser" viewBox="0 0 24 24"><path d="m7 21-4.3-4.3a2 2 0 0 1 0-2.8l9-9a2 2 0 0 1 2.8 0l5.6 5.6a2 2 0 0 1 0 2.8L13 21"/><line x1="22" y1="21" x2="7" y2="21"/><line x1="5" y1="11" x2="14" y2="20"/></symbol>
+  <symbol id="ic-align-left" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="14" y2="12"/><line x1="4" y1="18" x2="17" y2="18"/></symbol>
+  <symbol id="ic-align-center" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="5" y1="18" x2="19" y2="18"/></symbol>
+  <symbol id="ic-align-right" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="10" y1="12" x2="20" y2="12"/><line x1="7" y1="18" x2="20" y2="18"/></symbol>
+  <symbol id="ic-align-justify" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></symbol>
+  <symbol id="ic-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol>
+  <symbol id="ic-col-plus" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="16" rx="1.5"/><line x1="17" y1="8" x2="17" y2="16"/><line x1="13" y1="12" x2="21" y2="12"/></symbol>
+  <symbol id="ic-row-plus" viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="7" rx="1.5"/><line x1="12" y1="14" x2="12" y2="20"/><line x1="9" y1="17" x2="15" y2="17"/></symbol>
+  <symbol id="ic-merge" viewBox="0 0 24 24"><path d="M8 3H5a2 2 0 0 0-2 2v3M3 16v3a2 2 0 0 0 2 2h3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3"/><line x1="3" y1="12" x2="21" y2="12"/></symbol>
+  <symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></symbol>
+  <symbol id="ic-plus" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></symbol>
+  <symbol id="ic-x" viewBox="0 0 24 24"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol>
+  <symbol id="ic-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+  <symbol id="ic-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></symbol>
+</defs></svg>
+
+<input type="file" id="fileInput" accept=".docx,.pdf" hidden>
+
+<div class="app">
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="index.html"><span class="bname">NoteFlow</span><span class="bsub">PRODUCTIVITY SUITE</span></a>
+    <nav class="sb-nav">
+      <a class="nav-item" data-tip="Home" href="index.html"><svg class="i"><use href="#ic-home"/></svg><span class="label">Home</span></a>
+      <a class="nav-item" data-tip="Recent" href="recent.html"><svg class="i"><use href="#ic-clock"/></svg><span class="label">Recent</span></a>
+      <a class="nav-item" data-tip="Favourites" href="favourites.html"><svg class="i"><use href="#ic-star"/></svg><span class="label">Favourites</span></a>
+      <a class="nav-item" data-tip="Templates" href="templates.html"><svg class="i"><use href="#ic-template"/></svg><span class="label">Templates</span></a>
+      <a class="nav-item" data-tip="Trash" href="trash.html"><svg class="i"><use href="#ic-trash"/></svg><span class="label">Trash</span></a>
+    </nav>
+    <nav class="sb-nav">
+      <div class="nav-label">SYSTEM</div>
+      <a class="nav-item" data-tip="Settings" href="settings.html"><svg class="i"><use href="#ic-gear"/></svg><span class="label">Settings</span></a>
+    </nav>
+    <div class="sb-spacer"></div>
+  </aside>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main">
+
+    <!-- topbar -->
+    <header class="topbar">
+      <button class="panel-toggle" id="panelToggle" title="Toggle menu"><svg class="i"><use href="#ic-menu"/></svg></button>
+      <a class="ed-back" href="index.html"><svg class="i"><use href="#ic-back"/></svg> Back</a>
+      <div class="crumb"><span>Home</span><span class="sep">/</span><span class="cur" id="crumbCur">Document</span></div>
+      <div class="top-right">
+        <span class="ed-status" id="status"><span class="dot"></span> <span id="statusTxt">Saved</span></span>
+        <span class="ed-count" id="wordCount">0 words</span>
+        <button class="icon-btn" id="favBtn" title="Favourite"><svg class="i"><use href="#ic-star"/></svg></button>
+        <button class="btn-share"><svg class="i"><use href="#ic-share"/></svg> Share</button>
+        <button class="icon-btn" id="themeBtn" title="Theme"><svg class="i"><use href="#ic-contrast"/></svg></button>
+        <button class="icon-btn" title="More"><svg class="i"><use href="#ic-more"/></svg></button>
+      </div>
+    </header>
+
+    <!-- formatting toolbar -->
+    <div class="ed-toolbar" id="toolbar">
+      <div class="tb-group">
+        <button class="tb-btn" data-act="undo" data-tip="Undo"><svg class="i"><use href="#ic-undo"/></svg></button>
+        <button class="tb-btn" data-act="redo" data-tip="Redo"><svg class="i"><use href="#ic-redo"/></svg></button>
+      </div>
+      <div class="tb-sep"></div>
+
+      <!-- block type dropdown -->
+      <div class="tb-pop-wrap">
+        <button class="tb-select" id="blockBtn"><svg class="i"><use href="#ic-type"/></svg><span class="lbl" id="blockLbl">Paragraph</span><svg class="i caret"><use href="#ic-chevron"/></svg></button>
+        <div class="tb-pop" id="blockPop">
+          <button class="pop-item" data-block="paragraph"><svg class="i"><use href="#ic-type"/></svg> Paragraph</button>
+          <button class="pop-item" data-block="h1"><svg class="i"><use href="#ic-h1"/></svg> Heading 1</button>
+          <button class="pop-item" data-block="h2"><svg class="i"><use href="#ic-h2"/></svg> Heading 2</button>
+          <button class="pop-item" data-block="h3"><svg class="i"><use href="#ic-h3"/></svg> Heading 3</button>
+          <button class="pop-item" data-block="bullet"><svg class="i"><use href="#ic-list"/></svg> Bullet list</button>
+          <button class="pop-item" data-block="ordered"><svg class="i"><use href="#ic-list-ol"/></svg> Numbered list</button>
+          <button class="pop-item" data-block="task"><svg class="i"><use href="#ic-checklist"/></svg> Task list</button>
+          <button class="pop-item" data-block="quote"><svg class="i"><use href="#ic-quote"/></svg> Quote</button>
+          <button class="pop-item" data-block="code"><svg class="i"><use href="#ic-codeblock"/></svg> Code block</button>
+        </div>
+      </div>
+      <div class="tb-sep"></div>
+
+      <!-- lists -->
+      <div class="tb-group">
+        <button class="tb-btn" data-act="bullet" data-tip="Bullet list"><svg class="i"><use href="#ic-list"/></svg></button>
+        <button class="tb-btn" data-act="ordered" data-tip="Numbered list"><svg class="i"><use href="#ic-list-ol"/></svg></button>
+        <button class="tb-btn" data-act="task" data-tip="Checklist (checkbox)"><svg class="i"><use href="#ic-checklist"/></svg></button>
+      </div>
+      <div class="tb-sep"></div>
+
+      <!-- marks -->
+      <div class="tb-group">
+        <button class="tb-btn" data-act="bold" data-tip="Bold"><svg class="i"><use href="#ic-bold"/></svg></button>
+        <button class="tb-btn" data-act="italic" data-tip="Italic"><svg class="i"><use href="#ic-italic"/></svg></button>
+        <button class="tb-btn" data-act="underline" data-tip="Underline"><svg class="i"><use href="#ic-underline"/></svg></button>
+        <button class="tb-btn" data-act="strike" data-tip="Strikethrough"><svg class="i"><use href="#ic-strike"/></svg></button>
+        <button class="tb-btn" data-act="code" data-tip="Inline code"><svg class="i"><use href="#ic-code"/></svg></button>
+      </div>
+
+      <!-- colour + highlight -->
+      <div class="tb-group">
+        <div class="tb-pop-wrap">
+          <button class="tb-btn" id="colorBtn" data-tip="Text colour"><svg class="i"><use href="#ic-droplet"/></svg></button>
+          <div class="tb-pop" id="colorPop">
+            <div class="pop-h">Text colour</div>
+            <div class="sw-grid" id="colorGrid"></div>
+            <button class="pop-reset" data-act="unsetColor"><svg class="i"><use href="#ic-eraser"/></svg> Default colour</button>
+          </div>
+        </div>
+        <div class="tb-pop-wrap">
+          <button class="tb-btn" id="hiliteBtn" data-tip="Highlight"><svg class="i"><use href="#ic-marker"/></svg></button>
+          <div class="tb-pop" id="hilitePop">
+            <div class="pop-h">Highlight</div>
+            <div class="sw-grid" id="hiliteGrid"></div>
+            <button class="pop-reset" data-act="unsetHighlight"><svg class="i"><use href="#ic-eraser"/></svg> No highlight</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- sub / super -->
+      <div class="tb-group">
+        <button class="tb-btn" data-act="subscript" data-tip="Subscript"><svg class="i"><use href="#ic-subscript"/></svg></button>
+        <button class="tb-btn" data-act="superscript" data-tip="Superscript"><svg class="i"><use href="#ic-superscript"/></svg></button>
+      </div>
+      <div class="tb-sep"></div>
+
+      <!-- align -->
+      <div class="tb-group">
+        <button class="tb-btn" data-act="alignleft" data-tip="Align left"><svg class="i"><use href="#ic-align-left"/></svg></button>
+        <button class="tb-btn" data-act="aligncenter" data-tip="Align centre"><svg class="i"><use href="#ic-align-center"/></svg></button>
+        <button class="tb-btn" data-act="alignright" data-tip="Align right"><svg class="i"><use href="#ic-align-right"/></svg></button>
+        <button class="tb-btn" data-act="alignjustify" data-tip="Justify"><svg class="i"><use href="#ic-align-justify"/></svg></button>
+      </div>
+      <div class="tb-sep"></div>
+
+      <!-- insert -->
+      <div class="tb-group">
+        <button class="tb-btn" data-act="link" data-tip="Link"><svg class="i"><use href="#ic-link"/></svg></button>
+        <button class="tb-btn" data-act="image" data-tip="Image"><svg class="i"><use href="#ic-image"/></svg></button>
+        <button class="tb-btn" data-act="table" data-tip="Table"><svg class="i"><use href="#ic-table"/></svg></button>
+        <!-- callout -->
+        <div class="tb-pop-wrap">
+          <button class="tb-btn" id="calloutBtn" data-tip="Callout"><svg class="i"><use href="#ic-callout"/></svg></button>
+          <div class="tb-pop" id="calloutPop">
+            <div class="pop-h">Callout</div>
+            <button class="pop-item" data-callout="info"><span class="cdot" style="background:#4f6ef7"></span> Info</button>
+            <button class="pop-item" data-callout="success"><span class="cdot" style="background:#16a86b"></span> Success</button>
+            <button class="pop-item" data-callout="warning"><span class="cdot" style="background:#f5b450"></span> Warning</button>
+            <button class="pop-item" data-callout="danger"><span class="cdot" style="background:#e5484d"></span> Danger</button>
+            <button class="pop-item" data-callout="tip"><span class="cdot" style="background:#a855f7"></span> Tip</button>
+            <button class="pop-item" data-callout="neutral"><span class="cdot" style="background:#8b93a6"></span> Note</button>
+            <button class="pop-reset" data-act="unsetCallout"><svg class="i"><use href="#ic-x"/></svg> Remove callout</button>
+          </div>
+        </div>
+        <button class="tb-btn" data-act="hr" data-tip="Divider"><svg class="i"><use href="#ic-hr"/></svg></button>
+      </div>
+      <div class="tb-sep"></div>
+      <div class="tb-group">
+        <button class="tb-btn" data-act="import" data-tip="Import Word / PDF"><svg class="i"><use href="#ic-upload"/></svg></button>
+        <button class="tb-btn" data-act="clear" data-tip="Clear formatting"><svg class="i"><use href="#ic-eraser"/></svg></button>
+      </div>
+    </div>
+
+    <!-- contextual table tools -->
+    <div class="table-tools" id="tableTools">
+      <span class="tt-lbl">Table</span>
+      <button class="tt-btn" data-act="addColumnAfter"><svg class="i"><use href="#ic-col-plus"/></svg> Column</button>
+      <button class="tt-btn" data-act="addRowAfter"><svg class="i"><use href="#ic-row-plus"/></svg> Row</button>
+      <button class="tt-btn" data-act="toggleHeaderRow">Header row</button>
+      <button class="tt-btn" data-act="toggleHeaderColumn">Header col</button>
+      <button class="tt-btn" data-act="mergeOrSplit"><svg class="i"><use href="#ic-merge"/></svg> Merge / split</button>
+      <span class="tt-lbl" style="margin-left:6px">Cell colour</span>
+      <span class="tt-row" id="cellColors"></span>
+      <button class="tt-btn danger" data-act="deleteColumn">Del col</button>
+      <button class="tt-btn danger" data-act="deleteRow">Del row</button>
+      <button class="tt-btn danger" data-act="deleteTable"><svg class="i"><use href="#ic-trash"/></svg> Delete</button>
+    </div>
+
+    <!-- contextual code-block tools -->
+    <div class="code-tools" id="codeTools">
+      <span class="tt-lbl">Code</span>
+      <label class="code-langwrap">Language <select class="code-lang" id="codeLang"></select></label>
+      <button class="tt-btn" id="copyCode"><svg class="i"><use href="#ic-copy"/></svg> <span id="copyCodeLbl">Copy</span></button>
+    </div>
+
+    <!-- document -->
+    <div class="ed-scroll">
+      <article class="doc">
+        <input class="doc-title" id="docTitle" value="Product roadmap" placeholder="Untitled">
+        <div class="doc-meta">
+          <span class="m"><svg class="i"><use href="#ic-calendar"/></svg> Edited just now</span>
+          <span class="m"><svg class="i"><use href="#ic-clock"/></svg> <span id="readTime">1 min</span> read</span>
+          <div class="doc-tags">
+            <span class="tag">Planning</span>
+            <span class="tag">Q3</span>
+            <span class="tag add"><svg class="i" style="width:12px;height:12px"><use href="#ic-plus"/></svg> Tag</span>
+          </div>
+        </div>
+        <div class="doc-rule"></div>
+        <div class="pm-host" id="editor"></div>
+        <div class="gap-bottom"></div>
+      </article>
+    </div>
+
+  </main>
+  <div class="scrim" id="scrim"></div>
+</div>
+
+<!-- ===== shell interactions (sidebar / theme) ===== -->
+<script>
+(function(){
+  var sidebar=document.getElementById('sidebar'), scrim=document.getElementById('scrim'), pt=document.getElementById('panelToggle');
+  if(localStorage.getItem('nf2.collapsed')==='1') sidebar.classList.add('collapsed');
+  var sync=function(){ pt.classList.toggle('active', sidebar.classList.contains('collapsed')); }; sync();
+  pt.onclick=function(){
+    if(window.innerWidth<=600){ sidebar.classList.toggle('open'); scrim.classList.toggle('show', sidebar.classList.contains('open')); }
+    else { sidebar.classList.toggle('collapsed'); localStorage.setItem('nf2.collapsed', sidebar.classList.contains('collapsed')?'1':'0'); sync(); }
+  };
+  scrim.onclick=function(){ sidebar.classList.remove('open'); scrim.classList.remove('show'); };
+  document.documentElement.dataset.theme=localStorage.getItem('nf2.theme')||'dark';
+  document.getElementById('themeBtn').onclick=function(){
+    var h=document.documentElement; h.dataset.theme=h.dataset.theme==='dark'?'light':'dark';
+    localStorage.setItem('nf2.theme', h.dataset.theme);
+  };
+  document.getElementById('favBtn').onclick=function(){
+    this.classList.toggle('on'); this.querySelector('.i').classList.toggle('fill-star');
+  };
+  var p=new URLSearchParams(location.search).get('title');
+  if(p){ document.getElementById('docTitle').value=p; document.getElementById('crumbCur').textContent=p; document.title='NoteFlow — '+p; }
+  else { document.getElementById('crumbCur').textContent=document.getElementById('docTitle').value; }
+  document.getElementById('docTitle').addEventListener('input', function(){
+    document.getElementById('crumbCur').textContent=this.value||'Untitled';
+  });
+})();
+</script>
+
+<!-- ===== Tiptap editor ===== -->
+<script type="module">
+import { Editor, Node, Extension, mergeAttributes } from '@tiptap/core'
+import Suggestion from '@tiptap/suggestion'
+import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight'
+import { createLowlight, common } from 'lowlight'
+import StarterKit from '@tiptap/starter-kit'
+import Underline from '@tiptap/extension-underline'
+import Link from '@tiptap/extension-link'
+import Image from '@tiptap/extension-image'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
+import TextAlign from '@tiptap/extension-text-align'
+import Highlight from '@tiptap/extension-highlight'
+import TextStyle from '@tiptap/extension-text-style'
+import Color from '@tiptap/extension-color'
+import Subscript from '@tiptap/extension-subscript'
+import Superscript from '@tiptap/extension-superscript'
+import Placeholder from '@tiptap/extension-placeholder'
+import CharacterCount from '@tiptap/extension-character-count'
+import Table from '@tiptap/extension-table'
+import TableRow from '@tiptap/extension-table-row'
+import TableHeader from '@tiptap/extension-table-header'
+import TableCell from '@tiptap/extension-table-cell'
+import Typography from '@tiptap/extension-typography'
+import FontFamily from '@tiptap/extension-font-family'
+
+const $ = (s)=>document.querySelector(s)
+const esc = (t)=>t.replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))
+
+/* ---------- custom: Callout node ---------- */
+const Callout = Node.create({
+  name: 'callout',
+  group: 'block',
+  content: 'block+',
+  defining: true,
+  addAttributes(){
+    return { color: { default: 'info',
+      parseHTML: el => el.getAttribute('data-color') || 'info',
+      renderHTML: a => ({ 'data-color': a.color }) } }
+  },
+  parseHTML(){ return [{ tag: 'div[data-callout]' }] },
+  renderHTML({ HTMLAttributes }){
+    return ['div', mergeAttributes(HTMLAttributes, { 'data-callout': '', class: 'callout' }), 0]
+  },
+  addCommands(){
+    return {
+      setCallout: (attrs) => ({ commands }) => commands.wrapIn('callout', attrs),
+      toggleCallout: (attrs) => ({ commands }) => commands.toggleWrap('callout', attrs),
+      unsetCallout: () => ({ commands }) => commands.lift('callout'),
+    }
+  },
+})
+
+/* ---------- custom: table cells with a background colour ---------- */
+const withBg = (base) => base.extend({
+  addAttributes(){
+    return {
+      ...this.parent?.(),
+      backgroundColor: {
+        default: null,
+        parseHTML: el => el.getAttribute('data-bg') || el.style.backgroundColor || null,
+        renderHTML: a => a.backgroundColor ? { 'data-bg': a.backgroundColor, style: `background-color:${a.backgroundColor}` } : {},
+      },
+    }
+  },
+})
+const CTableCell = withBg(TableCell)
+const CTableHeader = withBg(TableHeader)
+
+/* ---------- custom: slash command ---------- */
+const fileInput = document.getElementById('fileInput')
+const slashItems = [
+  { title:'Text', desc:'Plain paragraph', icon:'ic-type', keywords:'paragraph plain body', command:({editor,range})=>editor.chain().focus().deleteRange(range).setParagraph().run() },
+  { title:'Heading 1', desc:'Large section title', icon:'ic-h1', keywords:'h1 title big', command:({editor,range})=>editor.chain().focus().deleteRange(range).setNode('heading',{level:1}).run() },
+  { title:'Heading 2', desc:'Medium section title', icon:'ic-h2', keywords:'h2 subtitle', command:({editor,range})=>editor.chain().focus().deleteRange(range).setNode('heading',{level:2}).run() },
+  { title:'Heading 3', desc:'Small section title', icon:'ic-h3', keywords:'h3', command:({editor,range})=>editor.chain().focus().deleteRange(range).setNode('heading',{level:3}).run() },
+  { title:'Checklist', desc:'Checkbox to-do list', icon:'ic-checklist', keywords:'checkbox check box todo to-do task tick tasklist done', command:({editor,range})=>editor.chain().focus().deleteRange(range).toggleTaskList().run() },
+  { title:'Bullet list', desc:'Unordered list', icon:'ic-list', keywords:'unordered ul dot bullets', command:({editor,range})=>editor.chain().focus().deleteRange(range).toggleBulletList().run() },
+  { title:'Numbered list', desc:'Ordered list', icon:'ic-list-ol', keywords:'ordered ol number numeric', command:({editor,range})=>editor.chain().focus().deleteRange(range).toggleOrderedList().run() },
+  { title:'Quote', desc:'Block quotation', icon:'ic-quote', keywords:'blockquote citation', command:({editor,range})=>editor.chain().focus().deleteRange(range).toggleBlockquote().run() },
+  { title:'Code block', desc:'Monospace code', icon:'ic-codeblock', keywords:'pre snippet monospace programming', command:({editor,range})=>editor.chain().focus().deleteRange(range).toggleCodeBlock().run() },
+  { title:'Callout — Info', desc:'Blue info box', icon:'ic-callout', keywords:'callout note box admonition info blue', command:({editor,range})=>editor.chain().focus().deleteRange(range).setCallout({color:'info'}).run() },
+  { title:'Callout — Warning', desc:'Amber warning box', icon:'ic-callout', keywords:'callout warning amber caution', command:({editor,range})=>editor.chain().focus().deleteRange(range).setCallout({color:'warning'}).run() },
+  { title:'Callout — Success', desc:'Green success box', icon:'ic-callout', keywords:'callout success green ok done', command:({editor,range})=>editor.chain().focus().deleteRange(range).setCallout({color:'success'}).run() },
+  { title:'Table', desc:'3 × 3 table', icon:'ic-table', keywords:'grid rows columns', command:({editor,range})=>editor.chain().focus().deleteRange(range).insertTable({rows:3,cols:3,withHeaderRow:true}).run() },
+  { title:'Divider', desc:'Horizontal rule', icon:'ic-hr', keywords:'hr rule separator line break', command:({editor,range})=>editor.chain().focus().deleteRange(range).setHorizontalRule().run() },
+  { title:'Image', desc:'Insert by URL', icon:'ic-image', keywords:'picture photo img media', command:({editor,range})=>{ const u=window.prompt('Image URL'); editor.chain().focus().deleteRange(range).run(); if(u) editor.chain().focus().setImage({src:u}).run() } },
+  { title:'Import Word / PDF', desc:'Insert a .docx or .pdf', icon:'ic-upload', keywords:'import word docx pdf upload file document', command:({editor,range})=>{ editor.chain().focus().deleteRange(range).run(); fileInput.click() } },
+]
+function slashRender(){
+  let el, selected = 0, items = [], pickCmd
+  const paint = ()=>{
+    el.innerHTML = '<div class="slash-head">Blocks</div>'
+    if(!items.length){ el.insertAdjacentHTML('beforeend', '<div class="slash-empty">No matches</div>'); return }
+    items.forEach((it,i)=>{
+      const b=document.createElement('button')
+      b.className='slash-item'+(i===selected?' active':'')
+      b.innerHTML=`<span class="slash-ic"><svg class="i"><use href="#${it.icon}"/></svg></span><span class="slash-tx"><b>${esc(it.title)}</b><small>${esc(it.desc)}</small></span>`
+      b.addEventListener('mousedown', e=>{ e.preventDefault(); pickCmd(it) })
+      el.appendChild(b)
+    })
+  }
+  // position the menu, flipping above the caret when there isn't room below
+  const place = (rect)=>{
+    if(!rect) return
+    const margin=8, gap=6
+    const vh=window.innerHeight, vw=window.innerWidth
+    const w=el.offsetWidth||272
+    const below=vh-rect.bottom-margin           // space under the caret
+    const above=rect.top-margin                 // space over the caret
+    const down=below>=above                     // open up if there's more room above
+    el.style.maxHeight=Math.min(360, Math.max(140, (down?below:above)-gap))+'px'
+    const h=el.offsetHeight                      // measured after max-height is applied
+    let top=down ? (rect.bottom+gap) : (rect.top-gap-h)
+    let left=rect.left
+    if(left+w>vw-margin) left=vw-w-margin
+    if(left<margin) left=margin
+    el.style.left=Math.round(left)+'px'
+    el.style.top=Math.round(Math.max(margin, top))+'px'
+    el.style.visibility='visible'
+  }
+  return {
+    onStart(props){
+      items=props.items; pickCmd=props.command; selected=0
+      el=document.createElement('div'); el.className='slash-menu'; el.style.visibility='hidden'; document.body.appendChild(el)
+      paint(); place(props.clientRect && props.clientRect())
+    },
+    onUpdate(props){ items=props.items; pickCmd=props.command; if(selected>=items.length) selected=0; paint(); place(props.clientRect && props.clientRect()) },
+    onKeyDown(props){
+      const k=props.event.key
+      if(k==='ArrowDown'){ selected=(selected+1)%Math.max(items.length,1); paint(); return true }
+      if(k==='ArrowUp'){ selected=(selected-1+items.length)%Math.max(items.length,1); paint(); return true }
+      if(k==='Enter'){ if(items[selected]) pickCmd(items[selected]); return true }
+      if(k==='Escape'){ return true }
+      return false
+    },
+    onExit(){ if(el) el.remove(); el=null }
+  }
+}
+const SlashCommand = Extension.create({
+  name: 'slashCommand',
+  addOptions(){ return { suggestion: { char:'/', startOfLine:false, command: ({editor,range,props})=>props.command({editor,range}) } } },
+  addProseMirrorPlugins(){ return [ Suggestion({ editor:this.editor, ...this.options.suggestion }) ] },
+})
+
+/* ---------- content ---------- */
+const content = `
+  <p>This document tracks the priorities, milestones and the launch checklist for our Q3 release. Try <strong>bold</strong>, <em>italic</em>, <u>underline</u>, <mark data-color="#ffd8a8" style="background-color:#ffd8a8">highlight</mark>, a <a href="https://tiptap.dev">link</a>, or type <code>/</code> for the block menu.</p>
+  <div data-callout data-color="info"><p><strong>Tip:</strong> type <code>/</code> anywhere to insert headings, lists, tables, callouts and more.</p></div>
+  <h2>Q3 priorities</h2>
+  <ul data-type="taskList">
+    <li data-type="taskItem" data-checked="true"><label><input type="checkbox" checked><span></span></label><div>Ship the redesigned editor</div></li>
+    <li data-type="taskItem" data-checked="false"><label><input type="checkbox"><span></span></label><div>Wire up the local note store</div></li>
+  </ul>
+  <h2>Milestones</h2>
+  <table>
+    <tr><th>Phase</th><th>Owner</th><th>Status</th></tr>
+    <tr><td>Design</td><td>Ganesh</td><td>Done</td></tr>
+    <tr><td>Editor build</td><td>Ganesh</td><td>In progress</td></tr>
+  </table>
+  <div data-callout data-color="warning"><p><strong>Heads up:</strong> the import feature reads <em>.docx</em> and <em>.pdf</em> files and drops their content in here.</p></div>
+  <pre><code class="language-javascript">function greet(name) {
+  const msg = "Hello, " + name + "!";
+  console.log(msg);
+  return msg;
+}
+greet("NoteFlow");</code></pre>
+  <hr>
+  <p></p>
+`
+
+/* ---------- document persistence (feeds the Home library) ---------- */
+const params = new URLSearchParams(location.search)
+let docId = params.get('id')
+const docIndex = () => { try { return JSON.parse(localStorage.getItem('nf.doc.index')) || [] } catch(e){ return [] } }
+const genDocId = () => 'doc-' + Date.now().toString(36) + '-' + Math.floor(Math.random()*1e6).toString(36)
+let savedDoc = null
+if(docId){ try { savedDoc = JSON.parse(localStorage.getItem('nf.doc.'+docId)) } catch(e){} }
+function randomName(){const A=['Amber','Brave','Calm','Cosmic','Crimson','Eager','Fuzzy','Golden','Hazy','Jolly','Lively','Mellow','Nimble','Quiet','Rustic','Silver','Sunny','Swift','Teal','Velvet','Wild','Zesty','Breezy','Clever','Dusky','Frosty'];const N=['Otter','Harbor','Meadow','Falcon','River','Comet','Maple','Pixel','Canyon','Lotus','Ember','Willow','Sparrow','Cobalt','Nimbus','Quartz','Beacon','Tundra','Orchid','Pebble','Lantern','Cedar','Marble','Aspen'];const p=a=>a[Math.floor(Math.random()*a.length)];return p(A)+' '+p(N)}
+if(savedDoc){ const tt = savedDoc.title || 'Untitled document'
+  $('#docTitle').value = tt; $('#crumbCur').textContent = tt; document.title = 'NoteFlow — ' + tt }
+else { const t = (params.get('title')||'').trim()
+  if(t && t.toLowerCase()==='untitled document'){ const rn = randomName(); $('#docTitle').value = rn; $('#crumbCur').textContent = rn; document.title = 'NoteFlow — ' + rn } }
+const startContent = savedDoc ? (savedDoc.html || '<p></p>') : (params.get('title') ? '<p></p>' : content)
+
+/* ---------- editor ---------- */
+const lowlight = createLowlight(common)
+const editor = new Editor({
+  element: $('#editor'),
+  extensions: [
+    StarterKit.configure({ heading: { levels: [1,2,3] }, codeBlock: false }),
+    CodeBlockLowlight.configure({ lowlight, defaultLanguage: 'javascript' }),
+    Underline,
+    Link.configure({ openOnClick: false, autolink: true, HTMLAttributes: { rel: 'noopener', target: '_blank' } }),
+    Image.configure({ inline: false, allowBase64: true }),
+    TaskList,
+    TaskItem.configure({ nested: true }),
+    TextAlign.configure({ types: ['heading','paragraph'] }),
+    Highlight.configure({ multicolor: true }),
+    TextStyle,
+    Color,
+    Subscript,
+    Superscript,
+    Placeholder.configure({ placeholder: 'Type "/" for commands, or just start writing…' }),
+    CharacterCount,
+    Table.configure({ resizable: true }),
+    TableRow, CTableHeader, CTableCell,
+    Typography,
+    FontFamily,
+    Callout,
+    SlashCommand.configure({ suggestion: { items: ({query})=>{ const q=query.toLowerCase().trim(); return slashItems.filter(i=> (i.title+' '+(i.keywords||'')).toLowerCase().includes(q)).slice(0,12) }, render: slashRender } }),
+  ],
+  content: startContent,
+  autofocus: 'end',
+})
+window.editor = editor
+
+/* auto-save this document (debounced) */
+let docSaveT = null
+function saveDoc(){
+  if(!docId){ docId = genDocId(); try { history.replaceState(null,'','?id='+docId) } catch(e){} }
+  const title = ($('#docTitle').value||'').trim() || 'Untitled document'
+  const words = editor.storage.characterCount.words(); const updated = Date.now()
+  try {
+    localStorage.setItem('nf.doc.'+docId, JSON.stringify({ id:docId, title, html:editor.getHTML(), words, updated }))
+    const idx = docIndex().filter(d=>d.id!==docId); idx.unshift({ id:docId, title, words, updated })
+    localStorage.setItem('nf.doc.index', JSON.stringify(idx))
+  } catch(e){}
+}
+function scheduleDoc(){ clearTimeout(docSaveT); docSaveT = setTimeout(saveDoc, 700) }
+editor.on('update', scheduleDoc)
+$('#docTitle').addEventListener('input', scheduleDoc)
+
+/* ---------- import: Word (.docx) & PDF ---------- */
+async function importFile(file){
+  const name = (file.name||'').toLowerCase()
+  try{
+    if(name.endsWith('.docx')){
+      if(!window.mammoth) throw new Error('Word importer not loaded (need internet)')
+      const arrayBuffer = await file.arrayBuffer()
+      const res = await window.mammoth.convertToHtml({ arrayBuffer })
+      editor.chain().focus().insertContent(res.value || '<p></p>').run()
+    } else if(name.endsWith('.pdf')){
+      const pdfjs = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.min.mjs')
+      pdfjs.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@6.1.200/build/pdf.worker.min.mjs'
+      const data = new Uint8Array(await file.arrayBuffer())
+      const pdf = await pdfjs.getDocument({ data }).promise
+      let html = ''
+      for(let p=1; p<=pdf.numPages; p++){
+        const page = await pdf.getPage(p)
+        const tc = await page.getTextContent()
+        const text = tc.items.map(i=>i.str).join(' ').replace(/\s+/g,' ').trim()
+        if(text) html += '<p>'+esc(text)+'</p>'
+        if(p < pdf.numPages) html += '<hr>'
+      }
+      editor.chain().focus().insertContent(html || '<p></p>').run()
+    } else {
+      alert('Please choose a .docx or .pdf file.')
+    }
+  }catch(err){ console.error(err); alert('Import failed: '+err.message) }
+}
+fileInput.addEventListener('change', e=>{ const f=e.target.files[0]; if(f) importFile(f); e.target.value='' })
+
+/* ---------- toolbar command map ---------- */
+const C = ()=>editor.chain().focus()
+const actions = {
+  undo:()=>C().undo().run(), redo:()=>C().redo().run(),
+  bold:()=>C().toggleBold().run(), italic:()=>C().toggleItalic().run(),
+  underline:()=>C().toggleUnderline().run(), strike:()=>C().toggleStrike().run(),
+  code:()=>C().toggleCode().run(),
+  bullet:()=>C().toggleBulletList().run(), ordered:()=>C().toggleOrderedList().run(), task:()=>C().toggleTaskList().run(),
+  subscript:()=>C().toggleSubscript().run(), superscript:()=>C().toggleSuperscript().run(),
+  alignleft:()=>C().setTextAlign('left').run(), aligncenter:()=>C().setTextAlign('center').run(),
+  alignright:()=>C().setTextAlign('right').run(), alignjustify:()=>C().setTextAlign('justify').run(),
+  hr:()=>C().setHorizontalRule().run(),
+  unsetColor:()=>C().unsetColor().run(), unsetHighlight:()=>C().unsetHighlight().run(),
+  unsetCallout:()=>C().unsetCallout().run(),
+  clear:()=>C().clearNodes().unsetAllMarks().run(),
+  image:()=>{ const u=window.prompt('Image URL'); if(u) C().setImage({src:u}).run() },
+  table:()=>C().insertTable({ rows:3, cols:3, withHeaderRow:true }).run(),
+  import:()=>fileInput.click(),
+  link:()=>{
+    const prev=editor.getAttributes('link').href
+    const url=window.prompt('Link URL', prev||'https://')
+    if(url===null) return
+    if(url===''){ C().extendMarkRange('link').unsetLink().run(); return }
+    C().extendMarkRange('link').setLink({ href:url }).run()
+  },
+  addColumnAfter:()=>C().addColumnAfter().run(), addRowAfter:()=>C().addRowAfter().run(),
+  toggleHeaderRow:()=>C().toggleHeaderRow().run(), toggleHeaderColumn:()=>C().toggleHeaderColumn().run(),
+  mergeOrSplit:()=>C().mergeOrSplit().run(),
+  deleteColumn:()=>C().deleteColumn().run(), deleteRow:()=>C().deleteRow().run(),
+  deleteTable:()=>C().deleteTable().run(),
+}
+document.querySelectorAll('[data-act]').forEach(btn=>{
+  const a=btn.dataset.act
+  if(actions[a]) btn.addEventListener('click', ()=>{ actions[a](); closePops() })
+})
+
+/* block dropdown */
+const blockMap = {
+  paragraph:()=>C().setParagraph().run(), h1:()=>C().toggleHeading({level:1}).run(),
+  h2:()=>C().toggleHeading({level:2}).run(), h3:()=>C().toggleHeading({level:3}).run(),
+  bullet:()=>C().toggleBulletList().run(), ordered:()=>C().toggleOrderedList().run(),
+  task:()=>C().toggleTaskList().run(), quote:()=>C().toggleBlockquote().run(), code:()=>C().toggleCodeBlock().run(),
+}
+document.querySelectorAll('[data-block]').forEach(b=> b.addEventListener('click', ()=>{ blockMap[b.dataset.block](); closePops() }))
+
+/* callout colours */
+document.querySelectorAll('[data-callout]').forEach(b=> b.addEventListener('click', ()=>{
+  const color=b.dataset.callout
+  if(editor.isActive('callout')) C().updateAttributes('callout',{color}).run()
+  else C().setCallout({color}).run()
+  closePops()
+}))
+
+/* colour + highlight swatches */
+const textColors = ['#ef7415','#e5484d','#f5b450','#16a86b','#0fb39a','#4f6ef7','#a78bfa','#f472b6','#1a1b24','#6c6d7b','#ffffff','#9596a2']
+const hiColors   = ['#ffe08a','#ffd8a8','#b9f6ca','#a7f3d0','#bbdefb','#c7d2fe','#e9d5ff','#f8bbd0','#fde68a','#bbf7d0','#bfdbfe','#fecaca']
+function fillSwatches(grid, colors, onPick){
+  colors.forEach(c=>{ const s=document.createElement('button'); s.className='sw'; s.style.background=c; s.title=c
+    s.addEventListener('click', ()=>{ onPick(c); closePops() }); grid.appendChild(s) })
+}
+fillSwatches($('#colorGrid'), textColors, (c)=>C().setColor(c).run())
+fillSwatches($('#hiliteGrid'), hiColors, (c)=>C().toggleHighlight({color:c}).run())
+
+/* table cell colours */
+const cellColors = ['#fde68a','#bbf7d0','#bfdbfe','#fecaca','#e9d5ff','#fed7aa']
+const cellWrap = $('#cellColors')
+cellColors.forEach(c=>{ const s=document.createElement('button'); s.className='tt-sw'; s.style.background=c; s.title=c
+  s.addEventListener('click', ()=>C().setCellAttribute('backgroundColor', c).run()); cellWrap.appendChild(s) })
+const clr=document.createElement('button'); clr.className='tt-sw clear'; clr.title='Clear cell colour'
+clr.innerHTML='<svg class="i"><use href="#ic-x"/></svg>'
+clr.addEventListener('click', ()=>C().setCellAttribute('backgroundColor', null).run()); cellWrap.appendChild(clr)
+
+/* code block: language picker + copy */
+const CODE_LANGS = [
+  ['plaintext','Plain text'],['javascript','JavaScript'],['typescript','TypeScript'],['python','Python'],
+  ['java','Java'],['c','C'],['cpp','C++'],['csharp','C#'],['go','Go'],['rust','Rust'],['php','PHP'],
+  ['ruby','Ruby'],['swift','Swift'],['kotlin','Kotlin'],['sql','SQL'],['xml','HTML / XML'],['css','CSS'],
+  ['scss','SCSS'],['json','JSON'],['yaml','YAML'],['bash','Bash / Shell'],['markdown','Markdown'],
+  ['lua','Lua'],['r','R'],['graphql','GraphQL'],['makefile','Makefile'],['ini','INI / TOML'],['diff','Diff'],
+]
+const codeLang = $('#codeLang')
+CODE_LANGS.forEach(([v,label])=>{ const o=document.createElement('option'); o.value=v; o.textContent=label; codeLang.appendChild(o) })
+codeLang.addEventListener('change', ()=> C().updateAttributes('codeBlock', { language: codeLang.value }).run())
+$('#copyCode').addEventListener('click', ()=>{
+  const { $from } = editor.state.selection
+  for(let d=$from.depth; d>0; d--){ const n=$from.node(d)
+    if(n.type.name==='codeBlock'){
+      navigator.clipboard.writeText(n.textContent)
+      const lbl=$('#copyCodeLbl'); lbl.textContent='Copied!'; setTimeout(()=>lbl.textContent='Copy',1200)
+      return
+    } }
+})
+
+/* popovers */
+function closePops(){ document.querySelectorAll('.tb-pop.open').forEach(p=>p.classList.remove('open')) }
+function bindPop(btnId, popId){
+  const btn=document.getElementById(btnId), pop=document.getElementById(popId)
+  btn.addEventListener('click', e=>{ e.stopPropagation(); const open=pop.classList.contains('open'); closePops(); if(!open) pop.classList.add('open') })
+  pop.addEventListener('click', e=>e.stopPropagation())
+}
+bindPop('blockBtn','blockPop'); bindPop('colorBtn','colorPop'); bindPop('hiliteBtn','hilitePop'); bindPop('calloutBtn','calloutPop')
+document.addEventListener('click', closePops)
+
+/* live state */
+const toggleByAct = {
+  bold:()=>editor.isActive('bold'), italic:()=>editor.isActive('italic'),
+  underline:()=>editor.isActive('underline'), strike:()=>editor.isActive('strike'),
+  code:()=>editor.isActive('code'), subscript:()=>editor.isActive('subscript'), superscript:()=>editor.isActive('superscript'),
+  bullet:()=>editor.isActive('bulletList'), ordered:()=>editor.isActive('orderedList'), task:()=>editor.isActive('taskList'),
+  alignleft:()=>editor.isActive({textAlign:'left'}), aligncenter:()=>editor.isActive({textAlign:'center'}),
+  alignright:()=>editor.isActive({textAlign:'right'}), alignjustify:()=>editor.isActive({textAlign:'justify'}),
+  link:()=>editor.isActive('link'),
+}
+function blockLabel(){
+  if(editor.isActive('heading',{level:1})) return 'Heading 1'
+  if(editor.isActive('heading',{level:2})) return 'Heading 2'
+  if(editor.isActive('heading',{level:3})) return 'Heading 3'
+  if(editor.isActive('bulletList')) return 'Bullet list'
+  if(editor.isActive('orderedList')) return 'Numbered list'
+  if(editor.isActive('taskList')) return 'Task list'
+  if(editor.isActive('blockquote')) return 'Quote'
+  if(editor.isActive('codeBlock')) return 'Code block'
+  if(editor.isActive('callout')) return 'Callout'
+  return 'Paragraph'
+}
+const status=$('#status'), statusTxt=$('#statusTxt')
+let saveTimer=null
+function markEditing(){
+  status.classList.add('editing'); statusTxt.textContent='Editing…'
+  clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ status.classList.remove('editing'); statusTxt.textContent='Saved' }, 800)
+}
+function update(){
+  document.querySelectorAll('[data-act]').forEach(b=>{ const f=toggleByAct[b.dataset.act]; if(f) b.classList.toggle('active', f()) })
+  document.getElementById('calloutBtn').classList.toggle('active', editor.isActive('callout'))
+  $('#blockLbl').textContent = blockLabel()
+  const words = editor.storage.characterCount.words()
+  $('#wordCount').textContent = words + (words===1?' word':' words')
+  $('#readTime').textContent = Math.max(1, Math.round(words/200)) + ' min'
+  $('#tableTools').classList.toggle('show', editor.isActive('table'))
+  const inCode = editor.isActive('codeBlock')
+  $('#codeTools').classList.toggle('show', inCode)
+  if(inCode) codeLang.value = editor.getAttributes('codeBlock').language || 'plaintext'
+}
+editor.on('selectionUpdate', update)
+editor.on('transaction', update)
+editor.on('update', markEditing)
+update()
+</script>
+</body>
+</html>
